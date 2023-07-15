@@ -1,0 +1,23 @@
+{
+  "description": "My iExec resource description, must be at least 150 chars long in order to pass the validation checks. Describe your application, dataset or workerpool to your users",
+  "license": "MIT",
+  "author": "?",
+  "social": {
+    "website": "?",
+    "github": "?"
+  },
+  "logo": "logo.png",
+  "buyConf": {},
+  "app": {
+    "owner": "0x8790ed88752255da1a08142d5ba31f0fc0b97fd4",
+    "name": "iosl-coordinator",
+    "type": "DOCKER",
+    "multiaddr": "docker.io/samchamani/gramine-coordinator:1.0.0",
+    "checksum": "0xab10bda2b7c855871b5f9f72ff6cfc2dced58432d5f1c492ab283bf6512e2292",
+    "mrenclave": {
+      "framework": "GRAMINE",
+      "version": "v0",
+      "fingerprint": "f1a643823683b8bb656725a1b69343a2709e1d13e9ebb97abdc4f24ade09f5b9"
+    }
+  }
+}
