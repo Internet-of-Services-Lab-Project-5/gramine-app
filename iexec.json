@@ -10,14 +10,14 @@
   "buyConf": {},
   "app": {
     "owner": "0x8790ed88752255da1a08142d5ba31f0fc0b97fd4",
-    "name": "iosl-coordinator",
+    "name": "iosl-p5-gramine-app",
     "type": "DOCKER",
-    "multiaddr": "docker.io/samchamani/gramine-coordinator:1.0.0",
-    "checksum": "0xab10bda2b7c855871b5f9f72ff6cfc2dced58432d5f1c492ab283bf6512e2292",
+    "multiaddr": "docker.io/samchamani/iosl-p5-gramine-app:1.0.0",
+    "checksum": "0xce1e4175ea0dac7d38f60c2fbe0c7efa4c1d4a2f8a56af3250ab062b181c1632",
     "mrenclave": {
       "framework": "GRAMINE",
       "version": "v0",
-      "fingerprint": "f1a643823683b8bb656725a1b69343a2709e1d13e9ebb97abdc4f24ade09f5b9"
+      "fingerprint": "1e8cfe432dbb189e2cefc27fd3f1904ca2c0c4264a251b3ff9594d3b1e759bd8"
     }
   }
 }

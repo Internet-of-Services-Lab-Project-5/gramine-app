@@ -2,14 +2,22 @@ import { IExec, utils } from "iexec";
 import { Wallet, Contract, AlchemyProvider } from "ethers";
 import * as fs from "fs";
 import AdmZip from "adm-zip";
+import fetch from "node-fetch";
 
 /* -------------------------------------------------------------------------- */
 /*                            GET DATA FROM SECRETS                           */
 /* -------------------------------------------------------------------------- */
 
-const { IEXEC_APP_DEVELOPER_SECRET, IEXEC_REQUESTER_SECRET_1, IEXEC_OUT } = process.env;
-const { iExecWallet, password, airlineTEEApp, walletListContract, alchemyKey, ethPrivateKey } =
-  JSON.parse(IEXEC_APP_DEVELOPER_SECRET);
+const { IEXEC_APP_DEVELOPER_SECRET, IEXEC_REQUESTER_SECRET_1, IEXEC_OUT } =
+  process.env;
+const {
+  iExecWallet,
+  password,
+  airlineTEEApp,
+  walletListContract,
+  alchemyKey,
+  ethPrivateKey,
+} = JSON.parse(IEXEC_APP_DEVELOPER_SECRET);
 console.log("Got secret data from environment variables.");
 
 /* -------------------------------------------------------------------------- */
@@ -39,7 +47,10 @@ console.log("Connected to smart contract.");
     /*                              INITIALIZE IEXEC                              */
     /* -------------------------------------------------------------------------- */
 
-    const { privateKey } = await Wallet.fromEncryptedJson(JSON.stringify(iExecWallet), password);
+    const { privateKey } = await Wallet.fromEncryptedJson(
+      JSON.stringify(iExecWallet),
+      password
+    );
     const signer = utils.getSignerFromPrivateKey(host, privateKey);
     const iexec = new IExec({ ethProvider: signer }, { smsURL });
     console.log("Initialized iExec.");
@@ -53,8 +64,13 @@ console.log("Connected to smart contract.");
     for (let i = 0; i < airlineCount; i++) {
       const airline = await contract.airlines(i);
       const airlineAddress = airline[2];
-      const datasetCount = await iexec.dataset.countUserDatasets(airlineAddress);
-      const datasetData = await iexec.dataset.showUserDataset(datasetCount - 1, airlineAddress);
+      const datasetCount = await iexec.dataset.countUserDatasets(
+        airlineAddress
+      );
+      const datasetData = await iexec.dataset.showUserDataset(
+        datasetCount - 1,
+        airlineAddress
+      );
       if (datasetData.objAddress) datasets.push(datasetData.objAddress);
     }
     console.log("Will check the following datasets:\n", datasets);
@@ -80,14 +96,17 @@ console.log("Connected to smart contract.");
       const datasetOrder = orders[0].order;
 
       /* ------------------------------ WORKERPOOL ------------------------------ */
-      const { orders: workerpoolOrders } = await iexec.orderbook.fetchWorkerpoolOrderbook({
-        category,
-        workerpool,
-        minTag: tag,
-        maxTag: tag,
-      });
-      const workerpoolOrder = workerpoolOrders && workerpoolOrders[0] && workerpoolOrders[0].order;
-      if (!workerpoolOrder) throw Error(`no workerpoolorder found for category ${category}`);
+      const { orders: workerpoolOrders } =
+        await iexec.orderbook.fetchWorkerpoolOrderbook({
+          category,
+          workerpool,
+          minTag: tag,
+          maxTag: tag,
+        });
+      const workerpoolOrder =
+        workerpoolOrders && workerpoolOrders[0] && workerpoolOrders[0].order;
+      if (!workerpoolOrder)
+        throw Error(`no workerpoolorder found for category ${category}`);
 
       /* --------------------------------- SECRETS -------------------------------- */
       const key = generateKey(10);
@@ -111,9 +130,12 @@ console.log("Connected to smart contract.");
         },
         category,
       });
-      const requestOrder = await iexec.order.signRequestorder(requestOrderToSign, {
-        preflightCheck: false,
-      });
+      const requestOrder = await iexec.order.signRequestorder(
+        requestOrderToSign,
+        {
+          preflightCheck: false,
+        }
+      );
 
       /* ---------------------------------- DEAL ---------------------------------- */
       const { dealid, volume } = await iexec.order.matchOrders(
@@ -134,13 +156,15 @@ console.log("Connected to smart contract.");
     /* -------------------------------------------------------------------------- */
 
     let completedDeals = 0;
+    await reportProgress(0, deals.length);
     for (const deal of deals) {
       const observable = await iexec.deal.obsDeal(deal);
       observable.subscribe({
-        next: (value) => console.log(value), //TODO: send status somewhere
+        next: (value) => console.log(value),
         error: (error) => console.log(error),
         complete: () => {
           completedDeals++;
+          reportProgress(completedDeals, deals.length);
           console.log(`Deal ${deal} completed.`);
           if (completedDeals === deals.length) {
             console.log(`All ${completedDeals} deals completed.`);
@@ -157,18 +181,26 @@ console.log("Connected to smart contract.");
                 const arrayBuffer = await file.arrayBuffer();
                 const buffer = Buffer.from(arrayBuffer);
                 const zip = new AdmZip(buffer);
-                const resultText = zip.getEntry("result.txt")?.getData().toString();
+                const resultText = zip
+                  .getEntry("result.txt")
+                  ?.getData()
+                  .toString();
                 const results = resultText?.split("\n");
                 allResults = [...allResults, ...results];
               }
-              const uniqueResults = allResults.filter((v, i, a) => a.indexOf(v) === i);
+              const uniqueResults = allResults.filter(
+                (v, i, a) => a.indexOf(v) === i
+              );
               console.log("Fetched and processed the results", uniqueResults);
 
               /* -------------------------------------------------------------------------- */
               /*                                 SAVE RESULT                                */
               /* -------------------------------------------------------------------------- */
 
-              await fs.promises.writeFile(`${IEXEC_OUT}/result.txt`, uniqueResults.join("\n"));
+              await fs.promises.writeFile(
+                `${IEXEC_OUT}/result.txt`,
+                uniqueResults.join("\n")
+              );
               const computedJsonObj = {
                 "deterministic-output-path": `${IEXEC_OUT}/result.txt`,
               };
@@ -188,9 +220,32 @@ console.log("Connected to smart contract.");
   }
 })();
 
+async function reportProgress(tasksDone, tasksCount) {
+  if (!process.env.IEXEC_REQUESTER_SECRET_2) return;
+  const { reportAddress, statusKey, apiKey } = JSON.parse(
+    process.env.IEXEC_REQUESTER_SECRET_2
+  );
+  if (!reportAddress || !statusKey || !apiKey) return;
+  try {
+    await fetch(reportAddress, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        statusKey,
+        apiKey,
+        tasksDone,
+        tasksCount,
+      }),
+    });
+  } catch (e) {
+    console.log(e);
+  }
+}
+
 function generateKey(length) {
   let result = "";
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   const charactersLength = characters.length;
   let counter = 0;
   while (counter < length) {

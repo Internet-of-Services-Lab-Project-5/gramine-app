@@ -1,13 +1,13 @@
 {
-  "name": "gramine-coordinator",
+  "name": "gramine-app",
   "version": "1.0.0",
   "description": "",
   "type": "module",
   "scripts": {
-    "gramine": "docker build . --tag samchamani/gramine-coordinator:1.0.0 && docker push samchamani/gramine-coordinator:1.0.0 && docker run --rm -e sps=unset samchamani/gramine-coordinator:1.0.0",
+    "gramine": "docker build . --tag samchamani/iosl-p5-gramine-app:1.0.0 && docker push samchamani/iosl-p5-gramine-app:1.0.0 && docker run --rm -e sps=unset samchamani/iosl-p5-gramine-app:1.0.0",
     "deploy": "iexec app deploy --chain bellecour",
     "secret": "node pushAppSecret.js",
-    "worker": "iexec app run --tag tee,gramine --workerpool debug-v8-bellecour.main.pools.iexec.eth --watch --chain bellecour"
+    "worker": "iexec app run --tag tee,gramine --workerpool debug-v8-bellecour.main.pools.iexec.eth --secret 1=testSecret10 --watch --chain bellecour"
   },
   "author": "",
   "license": "ISC",
@@ -15,6 +15,7 @@
     "adm-zip": "^0.5.10",
     "ethers": "^6.6.2",
     "fs": "^0.0.1-security",
-    "iexec": "^8.1.5"
+    "iexec": "^8.1.5",
+    "node-fetch": "^3.3.1"
   }
 }

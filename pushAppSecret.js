@@ -13,7 +13,8 @@ const iExecWallet = {
     cipherparams: {
       iv: "a96df15e916d8b3e3e1bac7ca7e80029",
     },
-    ciphertext: "6234d1d1f2b7043856ba835c5b983f0e1b55550fa92645a7cd294536f4cc8809",
+    ciphertext:
+      "6234d1d1f2b7043856ba835c5b983f0e1b55550fa92645a7cd294536f4cc8809",
     kdf: "scrypt",
     kdfparams: {
       salt: "e61d6399130ed128103e2cfadc2436eaa2880fdd350d3caf473e095def311286",
@@ -26,7 +27,8 @@ const iExecWallet = {
   },
 };
 const alchemyKey = "6msOk8gqto8m3OZtn5nhjeNSnN-HCPk9";
-const ethPrivateKey = "0x7ba7bb507739e598a318ebe53a1891e70d763cee1c22fb8ea41aa63b744bd45f";
+const ethPrivateKey =
+  "0x7ba7bb507739e598a318ebe53a1891e70d763cee1c22fb8ea41aa63b744bd45f";
 const secret = JSON.stringify({
   iExecWallet,
   password,
@@ -51,7 +53,10 @@ const testData = [
 ];
 
 (async () => {
-  const { privateKey } = await Wallet.fromEncryptedJson(JSON.stringify(iExecWallet), password);
+  const { privateKey } = await Wallet.fromEncryptedJson(
+    JSON.stringify(iExecWallet),
+    password
+  );
   const signer = utils.getSignerFromPrivateKey("bellecour", privateKey);
   const iexec = new IExec({ ethProvider: signer });
 
@@ -59,17 +64,23 @@ const testData = [
     teeFramework: "gramine",
   });
   if (!hasDevSecret) {
-    await iexec.app.pushAppSecret(appAddress, secret, { teeFramework: "gramine" });
+    await iexec.app.pushAppSecret(appAddress, secret, {
+      teeFramework: "gramine",
+    });
   }
 
   const isSet = await iexec.secrets.checkRequesterSecretExists(
     "0x8790ed88752255da1a08142d5ba31f0fc0b97fd4",
-    "testSecret",
+    "testSecret10",
     { teeFramework: "gramine" }
   );
   if (!isSet) {
-    await iexec.secrets.pushRequesterSecret("testSecret", JSON.stringify(testData), {
-      teeFramework: "gramine",
-    });
+    await iexec.secrets.pushRequesterSecret(
+      "testSecret10",
+      JSON.stringify(testData),
+      {
+        teeFramework: "gramine",
+      }
+    );
   }
 })();
