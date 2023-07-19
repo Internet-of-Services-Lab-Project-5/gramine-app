@@ -5,7 +5,7 @@ This is the repository for the TEE app that runs on the node server's request an
 ## How to Deploy This App
 
 1. Do your changes. If you add some files or dependencies check the Dockerfile and adjust it accordingly.
-2. In the scripts of `package.json` change `samchamani` to your docker user name. Make sure your docker daemon is running.
+2. In `iexec.json` and in the scripts of `package.json` change `samchamani` to your docker user name. Make sure your docker daemon is running.
 3. From this package's root run `npm run gramine` to build and push the docker image and finally retrieve the mr_enclave (This will result in an error, but we just need the output of the terminal).
 4. Check the terminal output from step 2 and copy the **docker checksum** and paste it in `iexec.json` as the value of `checksum`, but replace **sha:** with **0x**.
 5. Check again the output from step 2 and copy the **mr_enclave** value and paste it in `iexec.json` as the value of `fingerprint`.
